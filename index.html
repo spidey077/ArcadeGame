@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" type="image/png" href="logo.png">
 <title>Laser Bounce Madness</title>
 
 <style>
@@ -360,7 +361,7 @@ function update(){
   });
 
   // Difficulty Increase
-  if(score >= (difficultyLevel + 1) * 1000){
+  if(score >= (difficultyLevel + 1) * 100){
     difficultyLevel++;
 
     enemies.forEach(e=>{
@@ -445,4 +446,5 @@ loop();
 </script>
 </body>
 </html>
+
 
