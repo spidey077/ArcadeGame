@@ -345,7 +345,7 @@ function update(){
         hitSound.volume = 0.4;
         hitSound.currentTime = 0;
         hitSound.play();
-        score += 50;
+        score += 100;
       }
     });
   });
@@ -355,13 +355,13 @@ function update(){
 
   powerOrbs.forEach((p,pi)=>{
     if(collide(player,p)){
-      score += 100;
+      score += 50;
       powerOrbs.splice(pi,1);
     }
   });
 
   // Difficulty Increase
-  if(score >= (difficultyLevel + 1) * 500){
+  if(score >= (difficultyLevel + 1) * 300){
     difficultyLevel++;
 
     enemies.forEach(e=>{
@@ -446,6 +446,7 @@ loop();
 </script>
 </body>
 </html>
+
 
 
 
