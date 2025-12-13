@@ -174,7 +174,7 @@ const menu = document.getElementById('menu');
 const gameOverDiv = document.getElementById('gameOver');
 const finalScoreSpan = document.getElementById('finalScore');
 let gameRunning = false;
-let highScore = localStorage.getItem("laserBounceHighScore") || 0;
+let highScore = parseInt(localStorage.getItem("laserBounceHighScore")) || 0;
 document.getElementById("highScore").innerText = `High Score: ${highScore}`;
 
 function resizeCanvas() {
@@ -192,9 +192,9 @@ const player = { x: WIDTH/2, y: HEIGHT/2, radius: 18, speed: 6, dx: 0, dy: 0 };
 
 // ENEMIES
 let enemies = [];
-let ENEMY_COUNT = 8;
+let ENEMY_COUNT = 5;
 
-function randomVel() { return Math.random() * 2 + 3; }
+function randomVel() { return Math.random() * 1.5 + 3; }
 
 function spawnEnemy() {
   enemies.push({
