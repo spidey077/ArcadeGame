@@ -27,7 +27,7 @@ Survive as long as possible and maximize your score
 
 # Live Demo
 
-👉 (Add your hosted game link here)
+https://spidey077.github.io/ArcadeGame/
 
 # License
 
