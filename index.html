@@ -181,10 +181,11 @@
 </div>
 
 <!-- Sounds -->
-<audio id="laserSound" src="laser.mp3"></audio>
-<audio id="hitSound" src="hit.wav"></audio>
-<audio id="bounceSound" src="bounce sound.wav"></audio>
-<audio id="bgMusic" src="bg.mp3"></audio>
+<audio id="laserSound" src="laser.mp3" preload="auto"></audio>
+<audio id="hitSound" src="hit.mp3" preload="auto"></audio>
+<audio id="bounceSound" src="bounce.wav" preload="auto"></audio>
+<audio id="bgMusic" src="bg.mp3" preload="auto"></audio>
+<audio id="deathSound" src="death.mp3" preload="auto"></audio>
 
 <script>
 const canvas = document.getElementById('game');
@@ -194,7 +195,7 @@ const laserSound = document.getElementById('laserSound');
 const hitSound = document.getElementById('hitSound');
 const bounceSound = document.getElementById('bounceSound');
 const bgMusic = document.getElementById('bgMusic');
-
+const deathSound = document.getElementById('deathSound');
 document.addEventListener("click", () => {
   bgMusic.play();
 }, { once: true });
@@ -294,8 +295,11 @@ function startGame() {
 }
 
 function gameOver() {
-  gameRunning = false;
 
+  gameRunning = false;
+  deathSound.volume = 1;
+  deathSound.currentTime = 0;
+  deathSound.play();
   if (score > highScore) {
     highScore = score;
     localStorage.setItem("laserBounceHighScore", highScore);
@@ -361,7 +365,7 @@ function update(){
     enemies.forEach(e=>{
       if(e.active && collide({x:l.x,y:l.y,radius:5}, e)){
         e.active=false;
-        hitSound.volume = 0.4;
+        hitSound.volume =1;
         hitSound.currentTime = 0;
         hitSound.play();
         score += 100;
