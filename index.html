@@ -117,6 +117,16 @@
   justify-content: center;
   align-items: center;
 }
+#highScore {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  color: #0ff;
+  font-size: 24px;
+  font-weight: bold;
+  text-shadow: 0 0 10px #0ff, 0 0 20px #0ff;
+  z-index: 5;
+}
 
 </style>
 </head>
@@ -130,6 +140,7 @@
 </div>
 
 <div id="score">Score: 0</div>
+<div id="highScore">High Score: 0</div>
 
 <!-- GAME OVER -->
 <div id="gameOver">
@@ -163,6 +174,8 @@ const menu = document.getElementById('menu');
 const gameOverDiv = document.getElementById('gameOver');
 const finalScoreSpan = document.getElementById('finalScore');
 let gameRunning = false;
+let highScore = localStorage.getItem("laserBounceHighScore") || 0;
+document.getElementById("highScore").innerText = `High Score: ${highScore}`;
 
 function resizeCanvas() {
   canvas.width = window.innerWidth * 0.95;
@@ -249,6 +262,13 @@ function startGame() {
 
 function gameOver() {
   gameRunning = false;
+
+  if (score > highScore) {
+    highScore = score;
+    localStorage.setItem("laserBounceHighScore", highScore);
+    document.getElementById("highScore").innerText = `High Score: ${highScore}`;
+  }
+
   finalScoreSpan.innerText = score;
   gameOverDiv.style.visibility = "visible";
   bgMusic.pause();
