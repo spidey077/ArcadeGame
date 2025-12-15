@@ -154,8 +154,10 @@
 <div id="menu">
   <h1>Laser Bounce Madness</h1>
   <p>Move with Arrow Keys • Shoot with Space</p>
-  <button onclick="startGame()">Start Game</button>
-  <button onclick="showInstructions()">Instructions</button>
+<button onclick="startGame('easy')">Easy</button>
+<button onclick="startGame('medium')">Medium</button>
+<button onclick="startGame('hard')">Hard</button>
+<button onclick="showInstructions()">Instructions</button>
   <div id="instructions" style="display:none; margin-top:20px; color:#0ff; font-size:18px; text-align:center;">
     Eat small green static drops to score 50 points.<br>
     Shoot moving dots while avoiding them to score 100 points.<br>
@@ -196,6 +198,26 @@ const hitSound = document.getElementById('hitSound');
 const bounceSound = document.getElementById('bounceSound');
 const bgMusic = document.getElementById('bgMusic');
 const deathSound = document.getElementById('deathSound');
+let difficulty = "medium";
+
+const DIFFICULTY_SETTINGS = {
+  easy: {
+    enemyCount: 4,
+    speedMultiplier: 0.8,
+    scoreStep: 600
+  },
+  medium: {
+    enemyCount: 6,
+    speedMultiplier: 1,
+    scoreStep: 400
+  },
+  hard: {
+    enemyCount: 8,
+    speedMultiplier: 1.3,
+    scoreStep: 250
+  }
+};
+
 document.addEventListener("click", () => {
   bgMusic.play();
 }, { once: true });
@@ -232,12 +254,14 @@ let ENEMY_COUNT = 5;
 function randomVel() { return Math.random() * 1.7 + 3; }
 
 function spawnEnemy() {
+  const speedBase = randomVel() * DIFFICULTY_SETTINGS[difficulty].speedMultiplier;
+
   enemies.push({
     x: Math.random()*(WIDTH-30)+15,
     y: Math.random()*(HEIGHT-30)+15,
     radius: 12,
-    dx: (Math.random()<0.5? -1:1) * randomVel(),
-    dy: (Math.random()<0.5? -1:1) * randomVel(),
+    dx: (Math.random()<0.5? -1:1) * speedBase,
+    dy: (Math.random()<0.5? -1:1) * speedBase,
     color: `hsl(${Math.random()*360},70%,50%)`,
     active:true
   });
@@ -266,13 +290,14 @@ document.addEventListener('keyup', e=> keys[e.key]=false);
 
 document.addEventListener('keydown', e=>{
   if(e.key===" " && (player.dx!==0 || player.dy!==0)){
-    lasers.push({
-      x: player.x,
-      y: player.y,
-      dx: player.dx * laserSpeed,
-      dy: player.dy * laserSpeed,
-      length: 20
-    });
+  lasers.push({
+  x: player.x,
+  y: player.y,
+  dx: player.dx * laserSpeed,
+  dy: player.dy * laserSpeed,
+  length: 40   // longer laser
+});
+
     laserSound.volume = 0.5;
     laserSound.currentTime=0; 
     laserSound.play();
@@ -287,12 +312,21 @@ function collide(a,b){
   return Math.hypot(a.x-b.x, a.y-b.y) < a.radius+b.radius;
 }
 
-function startGame() {
+function startGame(selectedDifficulty) {
+  difficulty = selectedDifficulty;
+
+  ENEMY_COUNT = DIFFICULTY_SETTINGS[difficulty].enemyCount;
+
+  enemies = [];
+  for (let i = 0; i < ENEMY_COUNT; i++) spawnEnemy();
+
   menu.style.display = "none";
   gameRunning = true;
+
   bgMusic.volume = 0.4;
   bgMusic.play();
 }
+
 
 function gameOver() {
 
@@ -320,7 +354,9 @@ function restartGame() {
   frames = 0;
   difficultyLevel = 0;
 
-  for (let i = 0; i < ENEMY_COUNT; i++) spawnEnemy();
+ENEMY_COUNT = DIFFICULTY_SETTINGS[difficulty].enemyCount;
+for (let i = 0; i < ENEMY_COUNT; i++) spawnEnemy();
+
 
   player.x = WIDTH / 2;
   player.y = HEIGHT / 2;
@@ -382,7 +418,10 @@ function update(){
     }
   });
 
-  if(score >= (difficultyLevel + 1) * 400){
+  const step = DIFFICULTY_SETTINGS[difficulty].scoreStep;
+
+if (score >= (difficultyLevel + 1) * step) {
+
     difficultyLevel++;
     enemies.forEach(e=>{
       e.dx *= 1.1;
@@ -421,17 +460,33 @@ function draw(){
     ctx.shadowBlur=0;
   });
 
-  lasers.forEach(l=>{
-    ctx.strokeStyle="cyan";
-    ctx.lineWidth=4;
-    ctx.shadowColor="cyan";
-    ctx.shadowBlur=20;
-    ctx.beginPath();
-    ctx.moveTo(l.x, l.y);
-    ctx.lineTo(l.x - l.dx * 0.1, l.y - l.dy * 0.1);
-    ctx.stroke();
-    ctx.shadowBlur=0;
-  });
+ lasers.forEach(l => {
+  const nx = l.dx / Math.hypot(l.dx, l.dy);
+  const ny = l.dy / Math.hypot(l.dx, l.dy);
+
+  const endX = l.x - nx * l.length;
+  const endY = l.y - ny * l.length;
+
+  // OUTER RED GLOW
+  ctx.strokeStyle = "rgba(255, 0, 0, 0.6)";
+  ctx.lineWidth = 10;
+  ctx.shadowColor = "red";
+  ctx.shadowBlur = 30;
+  ctx.beginPath();
+  ctx.moveTo(l.x, l.y);
+  ctx.lineTo(endX, endY);
+  ctx.stroke();
+
+  // INNER BRIGHT CORE
+  ctx.strokeStyle = "#ff5555";
+  ctx.lineWidth = 4;
+  ctx.shadowBlur = 0;
+  ctx.beginPath();
+  ctx.moveTo(l.x, l.y);
+  ctx.lineTo(endX, endY);
+  ctx.stroke();
+});
+
 
   ctx.fillStyle="lime";
   ctx.shadowColor="lime";
