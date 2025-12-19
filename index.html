@@ -205,9 +205,9 @@ let highScore = parseInt(localStorage.getItem("laserBounceHighScore")) || 0;
 document.getElementById("highScore").innerText = `High Score: ${highScore}`;
 
 const DIFFICULTY_SETTINGS = {
-  easy: { enemyCount: 4, speedMultiplier: 0.8, scoreStep: 600 },
-  medium: { enemyCount: 6, speedMultiplier: 1, scoreStep: 400 },
-  hard: { enemyCount: 8, speedMultiplier: 1.3, scoreStep: 250 }
+  easy: { enemyCount: 6, speedMultiplier: 0.8, scoreStep: 400 },
+  medium: { enemyCount: 8, speedMultiplier: 1, scoreStep: 400 },
+  hard: { enemyCount: 10, speedMultiplier: 1.3, scoreStep: 250 }
 };
 
 document.addEventListener("click", () => { bgMusic.play(); }, { once: true });
@@ -295,7 +295,7 @@ let difficultyLevel = 0;
 let frames = 0;
 let gameOverTriggered = false;
 let laserAmmo = 0;
-const LASER_AMMO_PER_UNLOCK = 15;
+const LASER_AMMO_PER_UNLOCK = 30;
 
 // COLLISION
 function collide(a,b){ return Math.hypot(a.x-b.x, a.y-b.y) < a.radius+b.radius; }
@@ -389,7 +389,7 @@ function update(){
     spawnEnemy();
   }
 
-  if(!laserUnlocked && score>=500){ laserUnlocked=true; laserUnlockMessageTimer=180; laserAmmo=LASER_AMMO_PER_UNLOCK; laserSound.currentTime=0; laserSound.play(); bgMusic.volume=0.2; }
+  if(!laserUnlocked && score>=300){ laserUnlocked=true; laserUnlockMessageTimer=180; laserAmmo=LASER_AMMO_PER_UNLOCK; laserSound.currentTime=0; laserSound.play(); bgMusic.volume=0.2; }
 
   if(laserUnlockMessageTimer>0) laserUnlockMessageTimer--;
 
@@ -445,3 +445,4 @@ loop();
 
 </body>
 </html>
+
