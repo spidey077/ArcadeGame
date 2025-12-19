@@ -154,10 +154,10 @@
 <div id="menu">
   <h1>Laser Bounce Madness</h1>
   <p>Move with Arrow Keys • Shoot with Space</p>
-<button onclick="startGame('easy')">Easy</button>
-<button onclick="startGame('medium')">Medium</button>
-<button onclick="startGame('hard')">Hard</button>
-<button onclick="showInstructions()">Instructions</button>
+  <button onclick="startGame('easy')">Easy</button>
+  <button onclick="startGame('medium')">Medium</button>
+  <button onclick="startGame('hard')">Hard</button>
+  <button onclick="showInstructions()">Instructions</button>
   <div id="instructions" style="display:none; margin-top:20px; color:#0ff; font-size:18px; text-align:center;">
     Eat small green static drops to score 50 points.<br>
     Shoot moving dots while avoiding them to score 100 points.<br>
@@ -198,29 +198,19 @@ const hitSound = document.getElementById('hitSound');
 const bounceSound = document.getElementById('bounceSound');
 const bgMusic = document.getElementById('bgMusic');
 const deathSound = document.getElementById('deathSound');
+
 let difficulty = "medium";
+let gameRunning = false;
+let highScore = parseInt(localStorage.getItem("laserBounceHighScore")) || 0;
+document.getElementById("highScore").innerText = `High Score: ${highScore}`;
 
 const DIFFICULTY_SETTINGS = {
-  easy: {
-    enemyCount: 4,
-    speedMultiplier: 0.8,
-    scoreStep: 600
-  },
-  medium: {
-    enemyCount: 6,
-    speedMultiplier: 1,
-    scoreStep: 400
-  },
-  hard: {
-    enemyCount: 8,
-    speedMultiplier: 1.3,
-    scoreStep: 250
-  }
+  easy: { enemyCount: 4, speedMultiplier: 0.8, scoreStep: 600 },
+  medium: { enemyCount: 6, speedMultiplier: 1, scoreStep: 400 },
+  hard: { enemyCount: 8, speedMultiplier: 1.3, scoreStep: 250 }
 };
 
-document.addEventListener("click", () => {
-  bgMusic.play();
-}, { once: true });
+document.addEventListener("click", () => { bgMusic.play(); }, { once: true });
 
 function showInstructions() {
   const instr = document.getElementById('instructions');
@@ -230,13 +220,10 @@ function showInstructions() {
 const menu = document.getElementById('menu');
 const gameOverDiv = document.getElementById('gameOver');
 const finalScoreSpan = document.getElementById('finalScore');
-let gameRunning = false;
-let highScore = parseInt(localStorage.getItem("laserBounceHighScore")) || 0;
-document.getElementById("highScore").innerText = `High Score: ${highScore}`;
 
 function resizeCanvas() {
   canvas.width = window.innerWidth * 0.95;
-  canvas.height = window.innerHeight * 0.80;
+  canvas.height = window.innerHeight * 0.8;
 }
 resizeCanvas();
 window.addEventListener('resize', resizeCanvas);
@@ -255,305 +242,206 @@ function randomVel() { return Math.random() * 1.7 + 3; }
 
 function spawnEnemy() {
   const speedBase = randomVel() * DIFFICULTY_SETTINGS[difficulty].speedMultiplier;
-
-  // Choose a random corner: 0 = top-left, 1 = top-right, 2 = bottom-left, 3 = bottom-right
   const corner = Math.floor(Math.random() * 4);
   let x, y;
-
-  const offset = 50; // distance from the corner
+  const offset = 50;
   switch(corner) {
-    case 0: // top-left
-      x = Math.random() * offset + 15;
-      y = Math.random() * offset + 15;
-      break;
-    case 1: // top-right
-      x = WIDTH - Math.random() * offset - 15;
-      y = Math.random() * offset + 15;
-      break;
-    case 2: // bottom-left
-      x = Math.random() * offset + 15;
-      y = HEIGHT - Math.random() * offset - 15;
-      break;
-    case 3: // bottom-right
-      x = WIDTH - Math.random() * offset - 15;
-      y = HEIGHT - Math.random() * offset - 15;
-      break;
+    case 0: x = Math.random()*offset+15; y = Math.random()*offset+15; break;
+    case 1: x = WIDTH-Math.random()*offset-15; y = Math.random()*offset+15; break;
+    case 2: x = Math.random()*offset+15; y = HEIGHT-Math.random()*offset-15; break;
+    case 3: x = WIDTH-Math.random()*offset-15; y = HEIGHT-Math.random()*offset-15; break;
   }
-
   enemies.push({
-    x: x,
-    y: y,
+    x, y,
     radius: 12,
-    dx: (Math.random()<0.5? -1:1) * speedBase,
-    dy: (Math.random()<0.5? -1:1) * speedBase,
+    dx: (Math.random()<0.5?-1:1)*speedBase,
+    dy: (Math.random()<0.5?-1:1)*speedBase,
     color: `hsl(${Math.random()*360},70%,50%)`,
-    active:true
+    active: true
   });
 }
-
 
 for(let i=0;i<ENEMY_COUNT;i++) spawnEnemy();
 
 // LASERS
 let lasers = [];
 const laserSpeed = 14;
+let laserUnlocked = false;
+let laserUnlockMessageTimer = 0;
 
 // POWER ORBS
 let powerOrbs = [];
 function spawnOrb() {
   const orb = { x: Math.random()*(WIDTH-20)+10, y: Math.random()*(HEIGHT-20)+10, radius:8 };
   powerOrbs.push(orb);
-  setTimeout(()=>{
-    const idx = powerOrbs.indexOf(orb);
-    if(idx>=0) powerOrbs.splice(idx,1);
-  },10000);
+  setTimeout(()=>{ const idx = powerOrbs.indexOf(orb); if(idx>=0) powerOrbs.splice(idx,1); },10000);
 }
-let laserUnlocked = false; // lasers locked initially
-let laserUnlockMessageTimer = 0;
+
+// INPUT
 const keys = {};
 document.addEventListener('keydown', e=> keys[e.key]=true);
 document.addEventListener('keyup', e=> keys[e.key]=false);
 
-document.addEventListener('keydown', e => {
-  if(e.key === " " && laserUnlocked && (player.dx !== 0 || player.dy !== 0)) {
-    lasers.push({
-      x: player.x,
-      y: player.y,
-      dx: player.dx * laserSpeed,
-      dy: player.dy * laserSpeed,
-      length: 40
-    });
-
-    laserSound.volume = 0.5;
-    laserSound.currentTime = 0; 
-    laserSound.play();
+document.addEventListener('keydown', e=>{
+  if(e.key === " " && laserUnlocked && laserAmmo>0 && (player.dx!==0 || player.dy!==0)){
+    lasers.push({ x:player.x, y:player.y, dx:player.dx*laserSpeed, dy:player.dy*laserSpeed, length:40 });
+    laserSound.volume=0.5; laserSound.currentTime=0; laserSound.play();
+    laserAmmo--;
   }
 });
 
 let score = 0;
 let difficultyLevel = 0;
-let frames=0;
+let frames = 0;
+let gameOverTriggered = false;
+let laserAmmo = 0;
+const LASER_AMMO_PER_UNLOCK = 15;
 
-function collide(a,b){
-  return Math.hypot(a.x-b.x, a.y-b.y) < a.radius+b.radius;
+// COLLISION
+function collide(a,b){ return Math.hypot(a.x-b.x, a.y-b.y) < a.radius+b.radius; }
+
+// GAME FUNCTIONS
+function startGame(selectedDifficulty){
+  gameOverTriggered=false;
+  difficulty=selectedDifficulty;
+  ENEMY_COUNT=DIFFICULTY_SETTINGS[difficulty].enemyCount;
+  enemies=[]; for(let i=0;i<ENEMY_COUNT;i++) spawnEnemy();
+  menu.style.display="none"; gameRunning=true;
+  laserUnlocked=false; laserAmmo=0; laserUnlockMessageTimer=0;
+  score=0; frames=0; difficultyLevel=0;
+  bgMusic.volume=0.4; bgMusic.play();
+  startOrbSpawner();
 }
 
-function startGame(selectedDifficulty) {
-  difficulty = selectedDifficulty;
-
-  ENEMY_COUNT = DIFFICULTY_SETTINGS[difficulty].enemyCount;
-
-  enemies = [];
-  for (let i = 0; i < ENEMY_COUNT; i++) spawnEnemy();
-
-  menu.style.display = "none";
-  gameRunning = true;
-
-  bgMusic.volume = 0.4;
-  bgMusic.play();
+function restartGame(){
+  gameOverTriggered=false; gameRunning=true;
+  enemies=[]; lasers=[]; powerOrbs=[]; score=0; frames=0; difficultyLevel=0;
+  ENEMY_COUNT=DIFFICULTY_SETTINGS[difficulty].enemyCount; for(let i=0;i<ENEMY_COUNT;i++) spawnEnemy();
+  player.x=WIDTH/2; player.y=HEIGHT/2;
+  gameOverDiv.style.visibility="hidden";
+  laserUnlocked=false; laserAmmo=0; laserUnlockMessageTimer=0;
+  bgMusic.currentTime=0; bgMusic.play();
 }
 
-
-function gameOver() {
-
-  gameRunning = false;
-  deathSound.volume = 1;
-  deathSound.currentTime = 0;
-  deathSound.play();
-  if (score > highScore) {
-    highScore = score;
-    localStorage.setItem("laserBounceHighScore", highScore);
-    document.getElementById("highScore").innerText = `High Score: ${highScore}`;
-  }
-
-  finalScoreSpan.innerText = `Score: ${score}`;
-  gameOverDiv.style.visibility = "visible";
-  bgMusic.pause();
+function gameOver(){
+  if(gameOverTriggered) return;
+  gameOverTriggered=true; gameRunning=false;
+  deathSound.volume=1; deathSound.currentTime=0; deathSound.play();
+  if(score>highScore){ highScore=score; localStorage.setItem("laserBounceHighScore",highScore); document.getElementById("highScore").innerText=`High Score: ${highScore}`; }
+  finalScoreSpan.innerText=`Score: ${score}`;
+  gameOverDiv.style.visibility="visible"; bgMusic.pause();
 }
 
-function restartGame() {
-  gameRunning = true;
-  enemies = [];
-  lasers = [];
-  powerOrbs = [];
-  score = 0;
-  frames = 0;
-  difficultyLevel = 0;
-
-ENEMY_COUNT = DIFFICULTY_SETTINGS[difficulty].enemyCount;
-for (let i = 0; i < ENEMY_COUNT; i++) spawnEnemy();
-
-
-  player.x = WIDTH / 2;
-  player.y = HEIGHT / 2;
-
-  gameOverDiv.style.visibility = "hidden";
-  bgMusic.currentTime = 0;
-  bgMusic.play();
+function startOrbSpawner(){
+  setInterval(()=>{
+    if(!gameRunning) return;
+    const orb={ x:Math.random()*(WIDTH-20)+10, y:Math.random()*(HEIGHT-20)+10, radius:8 };
+    powerOrbs.push(orb);
+    setTimeout(()=>{ const idx=powerOrbs.indexOf(orb); if(idx>=0) powerOrbs.splice(idx,1); },10000);
+  },3000);
 }
 
-// UPDATE, DRAW, LOOP functions remain unchanged
-function update() {
+// UPDATE
+function update(){
+  if(!gameRunning) return;
   frames++;
+  player.dx=0; player.dy=0;
+  if(keys["ArrowUp"]) player.dy=-player.speed;
+  if(keys["ArrowDown"]) player.dy=player.speed;
+  if(keys["ArrowLeft"]) player.dx=-player.speed;
+  if(keys["ArrowRight"]) player.dx=player.speed;
+  player.x=Math.max(player.radius, Math.min(WIDTH-player.radius, player.x+player.dx));
+  player.y=Math.max(player.radius, Math.min(HEIGHT-player.radius, player.y+player.dy));
 
-  player.dx = 0; player.dy = 0;
-  if(keys["ArrowUp"]) player.dy = -player.speed;
-  if(keys["ArrowDown"]) player.dy = player.speed;
-  if(keys["ArrowLeft"]) player.dx = -player.speed;
-  if(keys["ArrowRight"]) player.dx = player.speed;
-
-  player.x += player.dx; 
-  player.y += player.dy;
-
-  player.x = Math.max(player.radius, Math.min(WIDTH-player.radius, player.x));
-  player.y = Math.max(player.radius, Math.min(HEIGHT-player.radius, player.y));
-
+  // ENEMIES
   enemies.forEach(e=>{
     if(!e.active) return;
-    e.x+=e.dx;
-    e.y+=e.dy;
-
+    e.x+=e.dx; e.y+=e.dy;
     if(e.x<e.radius || e.x>WIDTH-e.radius) e.dx*=-1;
     if(e.y<e.radius || e.y>HEIGHT-e.radius) e.dy*=-1;
-
     if(collide(e,player)) gameOver();
   });
 
-  lasers.forEach((l,li)=>{
-    l.x += l.dx;
-    l.y += l.dy;
-    if(l.x<0 || l.x>WIDTH || l.y<0 || l.y>HEIGHT) lasers.splice(li,1);
-
-    enemies.forEach(e=>{
-      if(e.active && collide({x:l.x,y:l.y,radius:5}, e)){
-        e.active=false;
-        hitSound.volume =1;
-        hitSound.currentTime = 0;
-        hitSound.play();
-        score += 100;
+  // LASERS
+  for(let li=lasers.length-1;li>=0;li--){
+    const l=lasers[li];
+    l.x+=l.dx; l.y+=l.dy;
+    if(l.x<0 || l.x>WIDTH || l.y<0 || l.y>HEIGHT){ lasers.splice(li,1); continue; }
+    for(let ei=enemies.length-1; ei>=0; ei--){
+      const e=enemies[ei];
+      if(e.active && collide({x:l.x,y:l.y,radius:5},e)){
+        e.active=false; hitSound.currentTime=0; hitSound.play();
+        score+=100; lasers.splice(li,1); break;
       }
-    });
-  });
-
-  if(frames % 60 === 0) spawnOrb();
-
-  powerOrbs.forEach((p,pi)=>{
-    if(collide(player,p)){
-      score += 50;
-      powerOrbs.splice(pi,1);
     }
-  });
+  }
+
+  // POWER ORBS
+  for(let pi=powerOrbs.length-1;pi>=0;pi--){
+    const p=powerOrbs[pi];
+    if(collide(player,p)){ score+=50; powerOrbs.splice(pi,1); }
+  }
 
   const step = DIFFICULTY_SETTINGS[difficulty].scoreStep;
-
-if (score >= (difficultyLevel + 1) * step) {
-
+  if(score >= (difficultyLevel+1)*step){
     difficultyLevel++;
-    enemies.forEach(e=>{
-      e.dx *= 1.1;
-      e.dy *= 1.1;
-    });
+    enemies.forEach(e=>{ e.dx*=1.1; e.dy*=1.1; });
     spawnEnemy();
   }
 
-  document.getElementById("score").innerText = `Score: ${score}`;
-   if(!laserUnlocked && score >= 500) {
-    laserUnlocked = true;
-    laserUnlockMessageTimer = 180; // show message for 3 seconds (assuming 60fps)
-    laserSound.currentTime = 0;
-    bgMusic.volume = 0.2; // lower music volume briefly
-    laserSound.play(); // play sound indicating unlock (can also use a different unlock sound)
-  }
+  if(!laserUnlocked && score>=500){ laserUnlocked=true; laserUnlockMessageTimer=180; laserAmmo=LASER_AMMO_PER_UNLOCK; laserSound.currentTime=0; laserSound.play(); bgMusic.volume=0.2; }
 
-  if(laserUnlockMessageTimer > 0) laserUnlockMessageTimer--;
+  if(laserUnlockMessageTimer>0) laserUnlockMessageTimer--;
 
-  document.getElementById("score").innerText = `Score: ${score}`;
+  document.getElementById("score").innerText=`Score: ${score}`;
 }
 
-function draw() {
-  ctx.fillStyle="#111";
-  ctx.fillRect(0,0,WIDTH,HEIGHT);
+// DRAW
+function draw(){
+  ctx.fillStyle="#111"; ctx.fillRect(0,0,WIDTH,HEIGHT);
 
-
-  ctx.fillStyle="yellow";
-  ctx.shadowColor="yellow";
-  ctx.shadowBlur=25;
+  // PLAYER
+  ctx.fillStyle="yellow"; ctx.shadowColor="yellow"; ctx.shadowBlur=25;
   ctx.beginPath();
-  ctx.moveTo(player.x, player.y - 18);
-  ctx.lineTo(player.x + 18, player.y);
-  ctx.lineTo(player.x, player.y + 18);
-  ctx.lineTo(player.x - 18, player.y);
-  ctx.closePath();
-  ctx.fill();
-  ctx.shadowBlur=0;
-  if(laserUnlockMessageTimer > 0) {
-    ctx.fillStyle = "#0ff";
-    ctx.font = "48px Segoe UI";
-    ctx.textAlign = "center";
-    ctx.shadowColor = "#0ff";
-    ctx.shadowBlur = 20;
-    ctx.fillText("Laser Unlocked!", WIDTH/2, HEIGHT/2 - 100);
-    ctx.shadowBlur = 0;
+  ctx.moveTo(player.x,player.y-18); ctx.lineTo(player.x+18,player.y);
+  ctx.lineTo(player.x,player.y+18); ctx.lineTo(player.x-18,player.y);
+  ctx.closePath(); ctx.fill(); ctx.shadowBlur=0;
+
+  if(laserUnlockMessageTimer>0){
+    ctx.fillStyle="#0ff"; ctx.font="48px Segoe UI"; ctx.textAlign="center";
+    ctx.shadowColor="#0ff"; ctx.shadowBlur=20; ctx.fillText("Laser Unlocked!",WIDTH/2,HEIGHT/2-100); ctx.shadowBlur=0;
   }
+
+  // ENEMIES
   enemies.forEach(e=>{
     if(!e.active) return;
-    ctx.fillStyle=e.color;
-    ctx.shadowColor=e.color;
-    ctx.shadowBlur=20;
-    ctx.beginPath();
-    ctx.arc(e.x,e.y,e.radius,0,Math.PI*2);
-    ctx.fill();
-    ctx.shadowBlur=0;
+    ctx.fillStyle=e.color; ctx.shadowColor=e.color; ctx.shadowBlur=20;
+    ctx.beginPath(); ctx.arc(e.x,e.y,e.radius,0,Math.PI*2); ctx.fill(); ctx.shadowBlur=0;
   });
 
- lasers.forEach(l => {
-  const nx = l.dx / Math.hypot(l.dx, l.dy);
-  const ny = l.dy / Math.hypot(l.dx, l.dy);
+  // LASERS
+  lasers.forEach(l=>{
+    const nx=l.dx/Math.hypot(l.dx,l.dy);
+    const ny=l.dy/Math.hypot(l.dx,l.dy);
+    const endX=l.x-nx*l.length; const endY=l.y-ny*l.length;
 
-  const endX = l.x - nx * l.length;
-  const endY = l.y - ny * l.length;
+    ctx.strokeStyle="rgba(255,0,0,0.6)"; ctx.lineWidth=10; ctx.shadowColor="red"; ctx.shadowBlur=30;
+    ctx.beginPath(); ctx.moveTo(l.x,l.y); ctx.lineTo(endX,endY); ctx.stroke();
 
-  // OUTER RED GLOW
-  ctx.strokeStyle = "rgba(255, 0, 0, 0.6)";
-  ctx.lineWidth = 10;
-  ctx.shadowColor = "red";
-  ctx.shadowBlur = 30;
-  ctx.beginPath();
-  ctx.moveTo(l.x, l.y);
-  ctx.lineTo(endX, endY);
-  ctx.stroke();
-
-  // INNER BRIGHT CORE
-  ctx.strokeStyle = "#ff5555";
-  ctx.lineWidth = 4;
-  ctx.shadowBlur = 0;
-  ctx.beginPath();
-  ctx.moveTo(l.x, l.y);
-  ctx.lineTo(endX, endY);
-  ctx.stroke();
-});
-
-
-  ctx.fillStyle="lime";
-  ctx.shadowColor="lime";
-  ctx.shadowBlur=25;
-  powerOrbs.forEach(p=>{
-    ctx.beginPath();
-    ctx.arc(p.x,p.y,p.radius,0,Math.PI*2);
-    ctx.fill();
+    ctx.strokeStyle="#ff5555"; ctx.lineWidth=4; ctx.shadowBlur=0;
+    ctx.beginPath(); ctx.moveTo(l.x,l.y); ctx.lineTo(endX,endY); ctx.stroke();
   });
+
+  // POWER ORBS
+  ctx.fillStyle="lime"; ctx.shadowColor="lime"; ctx.shadowBlur=25;
+  powerOrbs.forEach(p=>{ ctx.beginPath(); ctx.arc(p.x,p.y,p.radius,0,Math.PI*2); ctx.fill(); });
   ctx.shadowBlur=0;
 }
 
-function loop() {
-  if (gameRunning) {
-    update();
-    draw();
-  }
-  requestAnimationFrame(loop);
-}
-
+// LOOP
+function loop(){ if(gameRunning){ update(); draw(); } requestAnimationFrame(loop); }
 loop();
 </script>
+
 </body>
 </html>
