@@ -308,23 +308,24 @@ function spawnOrb() {
     if(idx>=0) powerOrbs.splice(idx,1);
   },10000);
 }
-
+let laserUnlocked = false; // lasers locked initially
+let laserUnlockMessageTimer = 0;
 const keys = {};
 document.addEventListener('keydown', e=> keys[e.key]=true);
 document.addEventListener('keyup', e=> keys[e.key]=false);
 
-document.addEventListener('keydown', e=>{
-  if(e.key===" " && (player.dx!==0 || player.dy!==0)){
-  lasers.push({
-  x: player.x,
-  y: player.y,
-  dx: player.dx * laserSpeed,
-  dy: player.dy * laserSpeed,
-  length: 40   // longer laser
-});
+document.addEventListener('keydown', e => {
+  if(e.key === " " && laserUnlocked && (player.dx !== 0 || player.dy !== 0)) {
+    lasers.push({
+      x: player.x,
+      y: player.y,
+      dx: player.dx * laserSpeed,
+      dy: player.dy * laserSpeed,
+      length: 40
+    });
 
     laserSound.volume = 0.5;
-    laserSound.currentTime=0; 
+    laserSound.currentTime = 0; 
     laserSound.play();
   }
 });
@@ -392,7 +393,7 @@ for (let i = 0; i < ENEMY_COUNT; i++) spawnEnemy();
 }
 
 // UPDATE, DRAW, LOOP functions remain unchanged
-function update(){
+function update() {
   frames++;
 
   player.dx = 0; player.dy = 0;
@@ -456,11 +457,23 @@ if (score >= (difficultyLevel + 1) * step) {
   }
 
   document.getElementById("score").innerText = `Score: ${score}`;
+   if(!laserUnlocked && score >= 500) {
+    laserUnlocked = true;
+    laserUnlockMessageTimer = 180; // show message for 3 seconds (assuming 60fps)
+    laserSound.currentTime = 0;
+    bgMusic.volume = 0.2; // lower music volume briefly
+    laserSound.play(); // play sound indicating unlock (can also use a different unlock sound)
+  }
+
+  if(laserUnlockMessageTimer > 0) laserUnlockMessageTimer--;
+
+  document.getElementById("score").innerText = `Score: ${score}`;
 }
 
-function draw(){
+function draw() {
   ctx.fillStyle="#111";
   ctx.fillRect(0,0,WIDTH,HEIGHT);
+
 
   ctx.fillStyle="yellow";
   ctx.shadowColor="yellow";
@@ -473,7 +486,15 @@ function draw(){
   ctx.closePath();
   ctx.fill();
   ctx.shadowBlur=0;
-
+  if(laserUnlockMessageTimer > 0) {
+    ctx.fillStyle = "#0ff";
+    ctx.font = "48px Segoe UI";
+    ctx.textAlign = "center";
+    ctx.shadowColor = "#0ff";
+    ctx.shadowBlur = 20;
+    ctx.fillText("Laser Unlocked!", WIDTH/2, HEIGHT/2 - 100);
+    ctx.shadowBlur = 0;
+  }
   enemies.forEach(e=>{
     if(!e.active) return;
     ctx.fillStyle=e.color;
