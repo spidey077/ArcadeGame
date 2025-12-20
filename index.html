@@ -403,10 +403,17 @@ function update(){
   }
 
   // POWER ORBS
-  for(let pi=powerOrbs.length-1;pi>=0;pi--){
-    const p=powerOrbs[pi];
-    if(collide(player,p)){ score+=50; powerOrbs.splice(pi,1); }
+ // POWER ORBS
+for(let pi=powerOrbs.length-1; pi>=0; pi--){
+  const p = powerOrbs[pi];
+  if(collide(player, p)) {
+    score += 50;
+    powerOrbs.splice(pi,1);
+    hitSound.currentTime = 0;  // reset sound to start
+    hitSound.play();           // play sound when power orb collected
   }
+}
+
 
   const step = DIFFICULTY_SETTINGS[difficulty].scoreStep;
   if(score >= (difficultyLevel+1)*step){
