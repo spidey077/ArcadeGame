@@ -172,10 +172,20 @@
 <!-- GAME OVER -->
 <div id="gameOver">
   <div id="gameOverContent">
-    <div id="gameOverText">GAME OVER</div>
-    <div id="finalScore">Score: 0</div>
-    <button onclick="restartGame()">Restart</button>
+  <div id="gameOverText">GAME OVER</div>
+  <div id="finalScore">Score: 0</div>
+  
+  <!-- Restart button -->
+  <button onclick="restartGame()">Restart</button>
+  <!-- Difficulty selection for game over -->
+  <div>
+    <p id="finalScore">Select Difficulty:</p>
+    <button onclick="startGame('easy')">Easy</button>
+    <button onclick="startGame('medium')">Medium</button>
+    <button onclick="startGame('hard')">Hard</button>
   </div>
+</div>
+
 </div>
 
 <div id="gameContainer">
@@ -302,16 +312,30 @@ function collide(a,b){ return Math.hypot(a.x-b.x, a.y-b.y) < a.radius+b.radius; 
 
 // GAME FUNCTIONS
 function startGame(selectedDifficulty){
-  gameOverTriggered=false;
-  difficulty=selectedDifficulty;
-  ENEMY_COUNT=DIFFICULTY_SETTINGS[difficulty].enemyCount;
-  enemies=[]; for(let i=0;i<ENEMY_COUNT;i++) spawnEnemy();
-  menu.style.display="none"; gameRunning=true;
-  laserUnlocked=false; laserAmmo=0; laserUnlockMessageTimer=0;
-  score=0; frames=0; difficultyLevel=0;
-  bgMusic.volume=0.4; bgMusic.play();
+  gameOverTriggered = false;
+  difficulty = selectedDifficulty;
+  ENEMY_COUNT = DIFFICULTY_SETTINGS[difficulty].enemyCount;
+  enemies = []; 
+  for(let i=0;i<ENEMY_COUNT;i++) spawnEnemy();
+  
+  // Hide menus
+  menu.style.display = "none"; 
+  gameOverDiv.style.visibility = "hidden";  // <-- hide game over
+  gameRunning = true;
+  
+  laserUnlocked = false; 
+  laserAmmo = 0; 
+  laserUnlockMessageTimer = 0;
+  score = 0; 
+  frames = 0; 
+  difficultyLevel = 0;
+  
+  bgMusic.volume = 0.4; 
+  bgMusic.play();
+  
   startOrbSpawner();
 }
+
 
 function restartGame(){
   gameOverTriggered=false; gameRunning=true;
@@ -445,4 +469,5 @@ loop();
 
 </body>
 </html>
+
 
