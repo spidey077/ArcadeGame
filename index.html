@@ -42,7 +42,7 @@
 
   #menu h1 {
     font-size: 64px;
-    margin-bottom: 10px;
+    margin-bottom: 50px;
     text-shadow: 0 0 20px #0ff;
   }
 
@@ -52,20 +52,27 @@
     color:#0ff;
   }
 
-  #menu button {
-    padding: 12px 35px;
-    font-size: 26px;
-    margin-bottom: 5px;
-    border:none;
-    background:#0ff;
-    color:#111;
-    cursor:pointer;
-    border-radius:8px;
-    transition:0.2s;
-  }
-  #menu button:hover{
-    background:#0aa;
-  }
+#menu .button-row {
+  display: flex;           /* arrange buttons in a row */
+  gap: 15px;               /* space between buttons */
+  justify-content: center; /* center horizontally */
+}
+
+#menu button {
+  padding: 12px 35px;
+  font-size: 26px;
+  border: none;
+  background: #0ff;
+  color: #111;
+  cursor: pointer;
+  border-radius: 8px;
+  transition: 0.2s;
+}
+
+#menu button:hover {
+  background: #0aa;
+}
+
 
   /* SCORE */
   #score {
@@ -153,11 +160,19 @@
 <!-- MAIN MENU -->
 <div id="menu">
   <h1>Laser Bounce Madness</h1>
-  <p>Move with Arrow Keys • Shoot with Space</p>
-  <button onclick="startGame('easy')">Easy</button>
-  <button onclick="startGame('medium')">Medium</button>
-  <button onclick="startGame('hard')">Hard</button>
-  <button onclick="showInstructions()">Instructions</button>
+
+  <!-- Difficulty buttons in a row -->
+  <div class="button-row">
+    <button onclick="startGame('easy')">Easy</button>
+    <button onclick="startGame('medium')">Medium</button>
+    <button onclick="startGame('hard')">Hard</button>
+  </div>
+
+  <!-- Instructions button below -->
+  <div style="margin-top:15px;">
+    <button onclick="showInstructions()">Instructions</button>
+  </div>
+
   <div id="instructions" style="display:none; margin-top:20px; color:#0ff; font-size:18px; text-align:center;">
     Eat small green static drops to score 50 points.<br>
     Shoot moving dots while avoiding them to score 100 points.<br>
