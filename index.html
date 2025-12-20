@@ -53,9 +53,9 @@
   }
 
 #menu .button-row {
-  display: flex;           /* arrange buttons in a row */
-  gap: 15px;               /* space between buttons */
-  justify-content: center; /* center horizontally */
+  display: flex;          
+  gap: 15px;              
+  justify-content: center; 
 }
 
 #menu button {
@@ -161,14 +161,12 @@
 <div id="menu">
   <h1>Laser Bounce Madness</h1>
 
-  <!-- Difficulty buttons in a row -->
   <div class="button-row">
     <button onclick="startGame('easy')">Easy</button>
     <button onclick="startGame('medium')">Medium</button>
     <button onclick="startGame('hard')">Hard</button>
   </div>
 
-  <!-- Instructions button below -->
   <div style="margin-top:15px;">
     <button onclick="showInstructions()">Instructions</button>
   </div>
@@ -418,7 +416,6 @@ function update(){
   }
 
   // POWER ORBS
- // POWER ORBS
 for(let pi=powerOrbs.length-1; pi>=0; pi--){
   const p = powerOrbs[pi];
   if(collide(player, p)) {
@@ -514,5 +511,6 @@ loop();
 
 </body>
 </html>
+
 
 
