@@ -208,7 +208,7 @@ const hitSound = document.getElementById('hitSound');
 const bounceSound = document.getElementById('bounceSound');
 const bgMusic = document.getElementById('bgMusic');
 const deathSound = document.getElementById('deathSound');
-
+let laserUnlockCount = 0; // track how many times ammo has been granted
 let difficulty = "medium";
 let gameRunning = false;
 let highScore = parseInt(localStorage.getItem("laserBounceHighScore")) || 0;
@@ -309,8 +309,6 @@ const LASER_AMMO_PER_UNLOCK = 30;
 
 // COLLISION
 function collide(a,b){ return Math.hypot(a.x-b.x, a.y-b.y) < a.radius+b.radius; }
-
-// GAME FUNCTIONS
 function startGame(selectedDifficulty){
   gameOverTriggered = false;
   difficulty = selectedDifficulty;
@@ -318,14 +316,14 @@ function startGame(selectedDifficulty){
   enemies = []; 
   for(let i=0;i<ENEMY_COUNT;i++) spawnEnemy();
   
-  // Hide menus
   menu.style.display = "none"; 
-  gameOverDiv.style.visibility = "hidden";  // <-- hide game over
+  gameOverDiv.style.visibility = "hidden";  
   gameRunning = true;
   
   laserUnlocked = false; 
   laserAmmo = 0; 
   laserUnlockMessageTimer = 0;
+  laserUnlockCount = 0;  // <-- reset this
   score = 0; 
   frames = 0; 
   difficultyLevel = 0;
@@ -336,15 +334,19 @@ function startGame(selectedDifficulty){
   startOrbSpawner();
 }
 
-
 function restartGame(){
-  gameOverTriggered=false; gameRunning=true;
-  enemies=[]; lasers=[]; powerOrbs=[]; score=0; frames=0; difficultyLevel=0;
-  ENEMY_COUNT=DIFFICULTY_SETTINGS[difficulty].enemyCount; for(let i=0;i<ENEMY_COUNT;i++) spawnEnemy();
-  player.x=WIDTH/2; player.y=HEIGHT/2;
-  gameOverDiv.style.visibility="hidden";
-  laserUnlocked=false; laserAmmo=0; laserUnlockMessageTimer=0;
-  bgMusic.currentTime=0; bgMusic.play();
+  gameOverTriggered = false;
+  gameRunning = true;
+  enemies = []; lasers = []; powerOrbs = []; 
+  score = 0; frames = 0; difficultyLevel = 0;
+  ENEMY_COUNT = DIFFICULTY_SETTINGS[difficulty].enemyCount; 
+  for(let i=0;i<ENEMY_COUNT;i++) spawnEnemy();
+  player.x = WIDTH/2; player.y = HEIGHT/2;
+  gameOverDiv.style.visibility = "hidden";
+  laserUnlocked = false; laserAmmo = 0; laserUnlockMessageTimer = 0;
+  laserUnlockCount = 0;  // <-- reset this
+  bgMusic.currentTime = 0; 
+  bgMusic.play();
 }
 
 function gameOver(){
@@ -412,8 +414,29 @@ function update(){
     enemies.forEach(e=>{ e.dx*=1.1; e.dy*=1.1; });
     spawnEnemy();
   }
+// First unlock at 200 points
+// First unlock at 200 points
+if(score >= 200 && !laserUnlocked) {
+  laserUnlocked = true;             // enable shooting
+  laserAmmo = LASER_AMMO_PER_UNLOCK; // give first ammo
+  laserUnlockMessageTimer = 180;     // show "Laser Unlocked!" message
+  laserSound.currentTime = 0;
+  laserSound.play();                 // play sound only first time
+  bgMusic.volume = 0.2;
+  laserUnlockCount = 1;              // track ammo unlocks for future refills
+}
 
-  if(!laserUnlocked && score>=300){ laserUnlocked=true; laserUnlockMessageTimer=180; laserAmmo=LASER_AMMO_PER_UNLOCK; laserSound.currentTime=0; laserSound.play(); bgMusic.volume=0.2; }
+// Ammo refill after every 200 points, no message, no sound
+if(laserUnlocked) {
+  const timesToGive = Math.floor((score - 200) / 200) + 1; // +1 because first unlock counted
+  if(timesToGive > laserUnlockCount) {
+    laserAmmo += LASER_AMMO_PER_UNLOCK; // refill laser silently
+    bgMusic.volume = 0.2;
+    laserUnlockCount = timesToGive;     // update count
+  }
+}
+
+
 
   if(laserUnlockMessageTimer>0) laserUnlockMessageTimer--;
 
