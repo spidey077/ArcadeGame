@@ -1,0 +1,197 @@
+.loading-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #000;
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    color: #0ff;
+    font-family: 'Courier New', Courier, monospace;
+    overflow: hidden;
+
+    /* Smooth fade out when unmounting is handled by parent or simply hard cut? 
+       For now, let's just center the content perfectly. */
+}
+
+.loading-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+}
+
+@keyframes fadeOut {
+    to {
+        opacity: 0;
+    }
+}
+
+/* CRT Scanlines */
+.scanlines {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100px;
+    background: linear-gradient(0deg, rgba(0, 0, 0, 0) 0%, rgba(0, 255, 255, 0.1) 50%, rgba(0, 0, 0, 0) 100%);
+    opacity: 0.1;
+    animation: scanline 2.5s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes scanline {
+    0% {
+        transform: translateY(-100%);
+    }
+
+    100% {
+        transform: translateY(100vh);
+    }
+}
+
+/* Glitch Effect */
+.glitch {
+    font-size: 80px;
+    font-weight: bold;
+    position: relative;
+    color: #0ff;
+    text-shadow: 2px 2px #ff00ff;
+    animation: glitch-skew 1s cubic-bezier(0.25, 0.46, 0.45, 0.94) both infinite;
+}
+
+.glitch::before,
+.glitch::after {
+    content: attr(data-text);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.glitch::before {
+    left: 2px;
+    text-shadow: -2px 0 #ff00ff;
+    clip: rect(44px, 450px, 56px, 0);
+    animation: glitch-anim 5s infinite linear alternate-reverse;
+}
+
+.glitch::after {
+    left: -2px;
+    text-shadow: -2px 0 #00ffff;
+    clip: rect(44px, 450px, 56px, 0);
+    animation: glitch-anim2 5s infinite linear alternate-reverse;
+}
+
+/* Loader Bar */
+.loader-box {
+    width: 300px;
+    height: 10px;
+    border: 2px solid #0ff;
+    padding: 2px;
+    margin: 40px 0;
+    box-shadow: 0 0 15px #0ff;
+}
+
+.loader-bar {
+    height: 100%;
+    background: #0ff;
+    width: 0%;
+    box-shadow: 0 0 10px #0ff;
+    transition: width 0.1s linear;
+}
+
+/* Typography */
+.subtitle {
+    font-size: 32px;
+    letter-spacing: 12px;
+    color: #ff00ff;
+    text-shadow: 0 0 10px #ff00ff;
+    margin-top: -10px;
+}
+
+.terminal-text {
+    font-size: 16px;
+    opacity: 0.8;
+}
+
+/* Animations */
+@keyframes glitch-anim {
+    0% {
+        clip: rect(21px, 9999px, 83px, 0);
+    }
+
+    20% {
+        clip: rect(7px, 9999px, 82px, 0);
+    }
+
+    40% {
+        clip: rect(33px, 9999px, 14px, 0);
+    }
+
+    60% {
+        clip: rect(90px, 9999px, 2px, 0);
+    }
+
+    80% {
+        clip: rect(12px, 9999px, 58px, 0);
+    }
+
+    100% {
+        clip: rect(48px, 9999px, 92px, 0);
+    }
+}
+
+@keyframes glitch-anim2 {
+    0% {
+        clip: rect(2px, 9999px, 33px, 0);
+    }
+
+    20% {
+        clip: rect(66px, 9999px, 20px, 0);
+    }
+
+    40% {
+        clip: rect(10px, 9999px, 53px, 0);
+    }
+
+    60% {
+        clip: rect(48px, 9999px, 81px, 0);
+    }
+
+    80% {
+        clip: rect(72px, 9999px, 3px, 0);
+    }
+
+    100% {
+        clip: rect(12px, 9999px, 45px, 0);
+    }
+}
+
+/* Mobile Responsiveness */
+@media screen and (max-width: 768px) {
+    .glitch {
+        font-size: 40px;
+    }
+
+    .subtitle {
+        font-size: 18px;
+        letter-spacing: 5px;
+        margin-top: 5px;
+        /* Adjust spacing */
+    }
+
+    .loader-box {
+        width: 80%;
+        /* Responsive width */
+        margin: 20px 0;
+    }
+
+    .terminal-text {
+        font-size: 12px;
+    }
+}
