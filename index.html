@@ -417,6 +417,7 @@
       difficulty = selectedDifficulty;
       ENEMY_COUNT = DIFFICULTY_SETTINGS[difficulty].enemyCount;
       enemies = [];
+      powerOrbs = [];  // Reset power orbs
       for (let i = 0; i < ENEMY_COUNT; i++) spawnEnemy();
 
       menu.style.display = "none";
@@ -430,6 +431,9 @@
       score = 0;
       frames = 0;
       difficultyLevel = 0;
+
+      player.x = WIDTH / 2;
+      player.y = HEIGHT / 2;
 
       bgMusic.volume = 0.4;
       bgMusic.play();
@@ -461,8 +465,11 @@
       gameOverDiv.style.visibility = "visible"; bgMusic.pause();
     }
 
+    let orbInterval = null;
+
     function startOrbSpawner() {
-      setInterval(() => {
+      if (orbInterval) clearInterval(orbInterval);
+      orbInterval = setInterval(() => {
         if (!gameRunning) return;
         const orb = { x: Math.random() * (WIDTH - 20) + 10, y: Math.random() * (HEIGHT - 20) + 10, radius: 8 };
         powerOrbs.push(orb);
